@@ -225,13 +225,14 @@ SNAKE.Snake = SNAKE.Snake || (function() {
         * This method is executed for each move of the snake. It determines where the snake will go and what will happen to it. This method needs to run quickly.
         * @method go
         */
+        var newHead;
         me.go = function() {
         	
         
             var oldHead = me.snakeHead,
-                newHead = me.snakeTail,
                 myDirection = currentDirection,
                 grid = playingBoard.grid; // cache grid for quicker lookup
+            newHead = me.snakeTail;
             me.snakeTail = newHead.prev;
             me.snakeHead = newHead;
             
@@ -1121,6 +1122,26 @@ function findPath(world, pathStart, pathEnd)
 		return newNode;
 	}
 	
+    function coorToDir (point, nextPoint) {
+        // This means that the snake's next move is to the left
+        if (point[0] - nextPoint[0] == 1){
+            return 3;
+        }
+        // This means that the snake's next move is to the right
+        else if (point[0] - nextPoint[0] == -1){
+            return 1;
+        }
+        // This means that the snake's next move is down
+        else if (point[1] - nextPoint[1] == 1){
+            return 2;
+        }
+        // This means that the snake's next move is up
+        else{
+            return 0;
+        }
+    }
+
+
 	// Path function, executes AStar algorithm operations
 	function calculatePath()
 	{
@@ -1196,9 +1217,28 @@ function findPath(world, pathStart, pathEnd)
 				Closed.push(myNode);
 			}
 		} // keep iterating until until the Open list is empty
-		console.log(result);
+		console.log(coorToDir(result[0], result[1]));
 		return result;
 	}
+
+    /*function coorToDir (point, nextPoint) {
+        // This means that the snake's next move is to the left
+        if (result[0][0] - result[1][0] == 1){
+            return 3;
+        }
+        // This means that the snake's next move is to the right
+        else if (result[0][0] - result[1][0] = -1){
+            return 1;
+        }
+        // This means that the snake's next move is down
+        else if (result[0][1] - result[1][1] = 1){
+            return 2;
+        }
+        // This means that the snake's next move is up
+        else{
+            return 0;
+        }
+    }*/
 
 // actually calculate the a-star path!
 	// this returns an array of coordinates
