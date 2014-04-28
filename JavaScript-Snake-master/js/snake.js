@@ -1218,7 +1218,7 @@ function findPath(world, pathStart, pathEnd)
 			}
 		} // keep iterating until until the Open list is empty
 		console.log(coorToDir(result[0], result[1]));
-		return result;
+		return coorToDir(result[0], result[1]);
 	}
 
 // actually calculate the a-star path!
