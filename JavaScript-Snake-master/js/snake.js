@@ -1221,25 +1221,6 @@ function findPath(world, pathStart, pathEnd)
 		return result;
 	}
 
-    /*function coorToDir (point, nextPoint) {
-        // This means that the snake's next move is to the left
-        if (result[0][0] - result[1][0] == 1){
-            return 3;
-        }
-        // This means that the snake's next move is to the right
-        else if (result[0][0] - result[1][0] = -1){
-            return 1;
-        }
-        // This means that the snake's next move is down
-        else if (result[0][1] - result[1][1] = 1){
-            return 2;
-        }
-        // This means that the snake's next move is up
-        else{
-            return 0;
-        }
-    }*/
-
 // actually calculate the a-star path!
 	// this returns an array of coordinates
 	// that is empty if no path is possible
