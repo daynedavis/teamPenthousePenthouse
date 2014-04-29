@@ -59,6 +59,14 @@ a.snake-link:hover {
     position: absolute;
 }
 
+.snake-obstacle-block {
+    margin: 0px;
+    padding: 0px;
+    background-color: #D5D5D5;
+    border: 0px solid #000080;
+    position: absolute;
+}
+
 .snake-playing-field {
     margin: 0px;
     padding: 0px;

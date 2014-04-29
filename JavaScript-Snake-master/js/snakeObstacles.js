@@ -122,7 +122,7 @@ SNAKE.Snake = SNAKE.Snake || (function() {
             rowShift = [-1, 0, 1, 0],
             xPosShift = [],
             yPosShift = [],
-            snakeSpeed = 85,
+            snakeSpeed = 50,
             isDead = false;
         
         // ----- public variables -----
@@ -559,6 +559,8 @@ function findPath(world, pathStart, pathEnd)
                 grid[newHead.row][newHead.col] = 1;
                 me.eatFood();
                 setTimeout(function(){me.go();}, snakeSpeed);
+            } else if (grid[newHead.row][newHead.col] === playingBoard.getGridObstacleValue()) {
+            	me.handleDeath();
             }
             
             
@@ -687,6 +689,8 @@ function findPath(world, pathStart, pathEnd)
 var xFood;
 var yFood;
 SNAKE.Food = SNAKE.Food || (function() {
+
+	//console.log("foodhello")
     
     // -------------------------------------------------------------------------
     // Private static variables and methods
@@ -737,12 +741,14 @@ SNAKE.Food = SNAKE.Food || (function() {
             return elmFood; 
              
         };
-        
+
+
         /**
         * Randomly places the food onto an available location on the playing board.
         * @method randomlyPlaceFood
         */    
         me.randomlyPlaceFood = function() {
+        	//console.log("hello3")
             // if there exist some food, clear its presence from the board
             if (playingBoard.grid[fRow] && playingBoard.grid[fRow][fColumn] === playingBoard.getGridFoodValue()){
                 playingBoard.grid[fRow][fColumn] = 0; 
@@ -774,6 +780,106 @@ SNAKE.Food = SNAKE.Food || (function() {
             elmFood.style.left = col * playingBoard.getBlockWidth() + "px";
             xFood = col;
             yFood = row;
+            
+        };
+    };
+})();
+
+
+//generating obstacles
+
+var xObstacle;
+var yObstalce;
+SNAKE.Obstacle = SNAKE.Obstacle || (function() {
+
+	//console.log("hello")
+    
+    // -------------------------------------------------------------------------
+    // Private static variables and methods
+    // -------------------------------------------------------------------------
+    
+    var instanceNumber = 0;
+    
+    function getRandomPosition(x, y){
+        return Math.floor(Math.random()*(y+1-x)) + x; 
+    }
+    
+    // -------------------------------------------------------------------------
+    // Contructor + public and private definitions
+    // -------------------------------------------------------------------------
+    
+    /*
+        config options:
+            playingBoard - the SnakeBoard that this object belongs too.
+    */
+    return function(config) {
+        
+        if (!config||!config.playingBoard) {return;}
+
+        // ----- private variables -----
+
+        var me = this;
+        var playingBoard = config.playingBoard;
+        var oRow, oColumn;
+        var myId = instanceNumber++;
+        
+
+        var elmObstacle = document.createElement("div");
+        elmObstacle.setAttribute("id", "snake-obstacle-"+myId);
+        elmObstacle.className = "snake-obstacle-block";
+        elmObstacle.style.width = playingBoard.getBlockWidth() + "px";
+        elmObstacle.style.height = playingBoard.getBlockHeight() + "px";
+        elmObstacle.style.left = "-1000px";
+        elmObstacle.style.top = "-1000px";
+        playingBoard.getBoardContainer().appendChild(elmObstacle);
+        
+        // ----- public methods -----
+        
+        /**
+        * @method getFoodElement
+        * @return {DOM Element} The div the represents the food.
+        */        
+        me.getObstacleElement = function() {
+            return elmObstacle; 
+             
+        };
+        
+        /**
+        * Randomly places the food onto an available location on the playing board.
+        * @method randomlyPlaceFood
+        */    
+        me.randomlyPlaceObstacle = function() {
+            // if there exist some food, clear its presence from the board
+            if (playingBoard.grid[oRow] && playingBoard.grid[oRow][oColumn] === playingBoard.getGridObstacleValue()){
+                playingBoard.grid[oRow][oColumn] = 0; 
+            }
+
+            var row = 0, col = 0, numTries = 0;
+
+            var maxRows = playingBoard.grid.length-1;
+            var maxCols = playingBoard.grid[0].length-1;
+            
+            while (playingBoard.grid[row][col] !== 0){
+                row = getRandomPosition(1, maxRows);
+                col = getRandomPosition(1, maxCols);
+
+                // in some cases there may not be any room to put food anywhere
+                // instead of freezing, exit out
+                numTries++;
+                if (numTries > 20000){
+                    row = -1;
+                    col = -1;
+                    break; 
+                } 
+            }
+
+            playingBoard.grid[row][col] = playingBoard.getGridObstacleValue();
+            oRow = row;
+            oColumn = col;
+            elmObstacle.style.top = row * playingBoard.getBlockHeight() + "px";
+            elmObstacle.style.left = col * playingBoard.getBlockWidth() + "px";
+            xObstacle = col;
+            yObstacle = row;
             
         };
     };
@@ -857,13 +963,17 @@ SNAKE.Board = SNAKE.Board || (function() {
             blockWidth = 20,
             blockHeight = 20,
             GRID_FOOD_VALUE = -1, // the value of a spot on the board that represents snake food, MUST BE NEGATIVE
+            GRID_OBSTACLE_VALUE = 1,
             myFood,
             mySnake,
+            //myObstacle,
+            //myObstacle2,
             boardState = 1, // 0: in active; 1: awaiting game start; 2: playing game
             myKeyListener,
             // Board components
             elmContainer, elmPlayingField, elmAboutPanel, elmLengthPanel, elmWelcome, elmTryAgain;
         
+        var myObstacle = [];
         // --- public variables ---
         me.grid = [];
         
@@ -909,7 +1019,14 @@ SNAKE.Board = SNAKE.Board || (function() {
             
             mySnake = new SNAKE.Snake({playingBoard:me,startRow:2,startCol:2});
             myFood = new SNAKE.Food({playingBoard: me});
-            
+	        
+	        for(var i = 0; i<20; i++){
+	        	myObstacle[i] = new SNAKE.Obstacle({playingBoard: me});
+	        }
+
+	        //myObstacle = new SNAKE.Obstacle({playingBoard: me});
+ 	        //myObstacle2 = new SNAKE.Obstacle({playingBoard: me});   		
+
             elmWelcome.style.zIndex = 1000;
         }
         function maxBoardWidth() {
@@ -1025,6 +1142,12 @@ SNAKE.Board = SNAKE.Board || (function() {
         me.getGridFoodValue = function() {
             return GRID_FOOD_VALUE;
         };
+
+        me.getGridObstacleValue = function() {
+        	console.log ("fuck")
+            return GRID_OBSTACLE_VALUE;
+        };
+
         /**
         * @method getPlayingFieldElement
         * @return {DOM Element} The div representing the playing field (this is where the snake can move).
@@ -1140,7 +1263,13 @@ SNAKE.Board = SNAKE.Board || (function() {
             }
             
             myFood.randomlyPlaceFood();
-            
+            for (var i = 0; i < 20; i++){
+            	myObstacle[i].randomlyPlaceObstacle();
+            }
+
+            //myObstacle.randomlyPlaceObstacle();
+            //myObstacle2.randomlyPlaceObstacle();
+
             // setup event listeners
             
             myKeyListener = function(evt) {
@@ -1189,6 +1318,11 @@ SNAKE.Board = SNAKE.Board || (function() {
         me.foodEaten = function() {
             elmLengthPanel.innerHTML = "Length: " + mySnake.snakeLength;
             myFood.randomlyPlaceFood();
+            for (var i = 0; i < 20; i++){
+            	myObstacle[i].randomlyPlaceObstacle();            	
+            }        
+            //myObstacle.randomlyPlaceObstacle();
+            //myObstacle2.randomlyPlaceObstacle();
         };
         
         /**
