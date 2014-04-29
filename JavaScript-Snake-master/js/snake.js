@@ -122,7 +122,7 @@ SNAKE.Snake = SNAKE.Snake || (function() {
             rowShift = [-1, 0, 1, 0],
             xPosShift = [],
             yPosShift = [],
-            snakeSpeed = 15,
+            snakeSpeed = 85,
             isDead = false;
         
         // ----- public variables -----
@@ -271,28 +271,7 @@ function findPath(world, pathStart, pathEnd)
 	// default: no diagonals (Manhattan)
 	var distanceFunction = ManhattanDistance;
 	var findNeighbours = function(){}; // empty
- 
-	/*
- 
-	// alternate heuristics, depending on your game:
- 
-	// diagonals allowed but no sqeezing through cracks:
-	var distanceFunction = DiagonalDistance;
-	var findNeighbours = DiagonalNeighbours;
- 
-	// diagonals and squeezing through cracks allowed:
-	var distanceFunction = DiagonalDistance;
-	var findNeighbours = DiagonalNeighboursFree;
- 
-	// euclidean but no squeezing through cracks:
-	var distanceFunction = EuclideanDistance;
-	var findNeighbours = DiagonalNeighbours;
- 
-	// euclidean and squeezing through cracks allowed:
-	var distanceFunction = EuclideanDistance;
-	var findNeighbours = DiagonalNeighboursFree;
- 
-	*/
+
 	
 	// distanceFunction functions
 	// these return how far away a point is to another
@@ -300,18 +279,6 @@ function findPath(world, pathStart, pathEnd)
 	function ManhattanDistance(Point, Goal)
 	{	// linear movement - no diagonals - just cardinal directions (NSEW)
 		return abs(Point.x - Goal.x) + abs(Point.y - Goal.y);
-	}
- 
-	function DiagonalDistance(Point, Goal)
-	{	// diagonal movement - assumes diag dist is 1, same as cardinals
-		return max(abs(Point.x - Goal.x), abs(Point.y - Goal.y));
-	}
- 
-	function EuclideanDistance(Point, Goal)
-	{	// diagonals are considered a little farther than cardinal directions
-		// diagonal movement using Euclide (AC = sqrt(AB^2 + BC^2))
-		// where AB = x2 - x1 and BC = y2 - y1 and AC will be [x3, y3]
-		return sqrt(pow(Point.x - Goal.x, 2) + pow(Point.y - Goal.y, 2));
 	}
 	
 	 // Neighbours functions, used by findNeighbours function
@@ -348,52 +315,6 @@ function findPath(world, pathStart, pathEnd)
 	moveQueue.unshift(coorToDir(pathStart, [ns[0].x,ns[0].y]));
 	//console.log(pathStart, [ns[0].x,ns[0].y]);
 	
-	}
- 
-	// returns every available North East, South East,
-	// South West or North West cell - no squeezing through
-	// "cracks" between two diagonals
-	function DiagonalNeighbours(myN, myS, myE, myW, N, S, E, W, result)
-	{
-		if(myN)
-		{
-			if(myE && canWalkHere(E, N))
-			result.push({x:E, y:N});
-			if(myW && canWalkHere(W, N))
-			result.push({x:W, y:N});
-		}
-		if(myS)
-		{
-			if(myE && canWalkHere(E, S))
-			result.push({x:E, y:S});
-			if(myW && canWalkHere(W, S))
-			result.push({x:W, y:S});
-		}
-	}
- 
-	// returns every available North East, South East,
-	// South West or North West cell including the times that
-	// you would be squeezing through a "crack"
-	function DiagonalNeighboursFree(myN, myS, myE, myW, N, S, E, W, result)
-	{
-		myN = N > -1;
-		myS = S < worldHeight;
-		myE = E < worldWidth;
-		myW = W > -1;
-		if(myE)
-		{
-			if(myN && canWalkHere(E, N))
-			result.push({x:E, y:N});
-			if(myS && canWalkHere(E, S))
-			result.push({x:E, y:S});
-		}
-		if(myW)
-		{
-			if(myN && canWalkHere(W, N))
-			result.push({x:W, y:N});
-			if(myS && canWalkHere(W, S))
-			result.push({x:W, y:S});
-		}
 	}
 	
 	function checkBody(x,y){
