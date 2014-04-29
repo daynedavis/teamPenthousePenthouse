@@ -122,7 +122,7 @@ SNAKE.Snake = SNAKE.Snake || (function() {
             rowShift = [-1, 0, 1, 0],
             xPosShift = [],
             yPosShift = [],
-            snakeSpeed = 125,
+            snakeSpeed = 50,
             isDead = false;
         
         // ----- public variables -----
@@ -1148,8 +1148,8 @@ SNAKE.Board = SNAKE.Board || (function() {
             if (config.fullScreen === true) {
                 cTop = 0;
                 cLeft = 0;
-                cWidth = getClientWidth()-5;
-                cHeight = getClientHeight()-5;
+                cWidth = 750;
+                cHeight = 750;
                 document.body.style.backgroundColor = "#FC5454";
             } else {
                 cTop = config.top;
