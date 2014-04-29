@@ -122,7 +122,7 @@ SNAKE.Snake = SNAKE.Snake || (function() {
             rowShift = [-1, 0, 1, 0],
             xPosShift = [],
             yPosShift = [],
-            snakeSpeed = 50,
+            snakeSpeed = 15,
             isDead = false;
         
         // ----- public variables -----
@@ -202,24 +202,23 @@ function coorToDir (point, nextPoint) {
          var lastMove = moveQueue[0] || currentDirection;
 
         // This means that the snake's next move is to the left
-        if (point[0] - nextPoint[0] == 1 )//&& (lastMove !== 1 || snakeLength === 1 ) ){
-         {   return 3;
+        if (point[0] - nextPoint[0] == 1 && (lastMove !== 1 || snakeLength === 1 ) ){
+           return 3;
         }
         // This means that the snake's next move is to the right
-        else if (point[0] - nextPoint[0] == -1)// && (lastMove !== 3 || snakeLength === 1)){
-         {   return 1;
+        else if (point[0] - nextPoint[0] == -1 && (lastMove !== 3 || snakeLength === 1)){
+            return 1;
         }
         // This means that the snake's next move is down
-        else if ((point[1] - nextPoint[1]) == -1 )//&& (lastMove !== 0 || snakeLength === 1)){
-         {   return 2;
+        else if ((point[1] - nextPoint[1]) == -1 && (lastMove !== 0 || snakeLength === 1)){
+            return 2;
         }
         // This means that the snake's next move is up
         else {
             return 0;
         }
        // else return otherDir();
-    }
-    
+    }    
 /*function otherDir() {
 console.log("otherDir");
 	var snakeLength = me.snakeLength;
@@ -342,6 +341,13 @@ function findPath(world, pathStart, pathEnd)
 		result.push({x:W, y:y});
 		findNeighbours(myN, myS, myE, myW, N, S, E, W, result);
 		return result;
+	}
+	
+	function moveSafe(){
+	var ns = Neighbours(me.snakeHead.col, me.snakeHead.row);
+	moveQueue.unshift(coorToDir(pathStart, [ns[0].x,ns[0].y]));
+	//console.log(pathStart, [ns[0].x,ns[0].y]);
+	
 	}
  
 	// returns every available North East, South East,
@@ -516,11 +522,16 @@ function findPath(world, pathStart, pathEnd)
 			}
 		} // keep iterating until until the Open list is empty
 		//return result;
-		console.log(result);
-		console.log(world);
-		/*console.log(result);
-		console.log(result[0],result[1]);*/
-		moveQueue.unshift(coorToDir(result[0],result[1]));
+		if (result[0] != null){
+			moveQueue.unshift(coorToDir(result[0],result[1]));
+		}
+		else {
+		//console.log("uh oh");
+		moveSafe();
+			//findPath(world, pathStart, pathEnd)
+			//moveQueue.unshift(otherDir());
+		}
+
 		//console.log(coorToDir(result[0], result[1]));
 		//return coorToDir(result[0], result[1]);
 	}
