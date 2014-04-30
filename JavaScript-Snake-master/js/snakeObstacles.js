@@ -115,14 +115,14 @@ SNAKE.Snake = SNAKE.Snake || (function() {
         var me = this,
             playingBoard = config.playingBoard,
             myId = instanceNumber++,
-            growthIncr = 1,
+            growthIncr = 5,
             moveQueue = [], // a queue that holds the next moves of the snake
             currentDirection = 1, // 0: up, 1: left, 2: down, 3: right
             columnShift = [0, 1, 0, -1],
             rowShift = [-1, 0, 1, 0],
             xPosShift = [],
             yPosShift = [],
-            snakeSpeed = 20,
+            snakeSpeed = 25,
             isDead = false;
         
         // ----- public variables -----
@@ -310,10 +310,36 @@ function findPath(world, pathStart, pathEnd)
 		return result;
 	}
 	
+	function Neighbours2(x, y)
+	{
+		var	N = y - 1,
+		S = y + 1,
+		E = x + 1,
+		W = x - 1,
+		myN = N > -1 && canWalkHere(x, N) && (canWalkHere(x + 1, N) && canWalkHere(x - 1, N) && (canWalkHere(x, N - 1))),
+		myS = S < worldHeight && canWalkHere(x, S) && (canWalkHere(x + 1, S) && canWalkHere(x - 1, S) && canWalkHere(x, S + 1)),
+		myE = E < worldWidth && canWalkHere(E, y) && (canWalkHere(E, y + 1) && canWalkHere(E, y - 1) && canWalkHere(E + 1, y)),
+		myW = W > -1 && canWalkHere(W, y) && (canWalkHere(W, y + 1) && canWalkHere(W, y - 1) && canWalkHere(W - 1, y)),
+		result = [];
+		if(myN)
+		result.push({x:x, y:N});
+		if(myE)
+		result.push({x:E, y:y});
+		if(myS)
+		result.push({x:x, y:S});
+		if(myW)
+		result.push({x:W, y:y});
+		findNeighbours(myN, myS, myE, myW, N, S, E, W, result);
+		return result;
+	}
+	
 	function moveSafe(){
 	var ns = Neighbours(me.snakeHead.col, me.snakeHead.row);
+	/*if (ns[0] === null) {
+		ns = Neighbours(me.snakeHead.col, me.snakeHead.row);
+	}*/
 	moveQueue.unshift(coorToDir(pathStart, [ns[0].x,ns[0].y]));
-	//console.log(pathStart, [ns[0].x,ns[0].y]);
+	console.log(pathStart, [ns[0].x,ns[0].y]);
 	
 	}
 	
@@ -1144,7 +1170,6 @@ SNAKE.Board = SNAKE.Board || (function() {
         };
 
         me.getGridObstacleValue = function() {
-        	console.log ("fuck")
             return GRID_OBSTACLE_VALUE;
         };
 
