@@ -191,12 +191,9 @@ SNAKE.Snake = SNAKE.Snake || (function() {
                   3   1
                     2
         */
-        
-        
-        
-        
-        //findPath(d, 
-
+                
+/* This function translates things in a coordinate format to a numerical direction where
+   0 is North, 1 is East, 2 is South, and 3 is West */
 function coorToDir (point, nextPoint) {
 		 var snakeLength = me.snakeLength;
          var lastMove = moveQueue[0] || currentDirection;
@@ -219,6 +216,7 @@ function coorToDir (point, nextPoint) {
         }
        // else return otherDir();
     }    
+
 /*function otherDir() {
 console.log("otherDir");
 	var snakeLength = me.snakeLength;
@@ -241,7 +239,7 @@ console.log("otherDir");
 
 }*/
 
-
+// This is the function that uses A* to find the shortest path
 function findPath(world, pathStart, pathEnd)
 {
 
@@ -260,24 +258,18 @@ function findPath(world, pathStart, pathEnd)
 	var maxWalkableTileNum = 0;
  
 	// keep track of the world dimensions
-	// Note that this A-star implementation expects the world array to be square: 
-	// it must have equal height and width. If your game world is rectangular, 
-	// just fill the array with dummy values to pad the empty space.
 	var worldWidth = world[0].length;
 	var worldHeight = world.length;
 	var worldSize =	worldWidth * worldHeight;
- 
-	// which heuristic should we use?
-	// default: no diagonals (Manhattan)
+	
+	// we are using Manhattan distance (no diagonals) 
 	var distanceFunction = ManhattanDistance;
 	var findNeighbours = function(){}; // empty
 
-	
-	// distanceFunction functions
-	// these return how far away a point is to another
- 
+
+	// calculates distance	
 	function ManhattanDistance(Point, Goal)
-	{	// linear movement - no diagonals - just cardinal directions (NSEW)
+	{	
 		return abs(Point.x - Goal.x) + abs(Point.y - Goal.y);
 	}
 	
@@ -285,8 +277,7 @@ function findPath(world, pathStart, pathEnd)
 	// to locate adjacent available cells that aren't blocked
  
 	// Returns every available North, South, East or West
-	// cell that is empty. No diagonals,
-	// unless distanceFunction function is not Manhattan
+	// cell that is empty.
 	function Neighbours(x, y)
 	{
 		var	N = y - 1,
@@ -309,7 +300,8 @@ function findPath(world, pathStart, pathEnd)
 		findNeighbours(myN, myS, myE, myW, N, S, E, W, result);
 		return result;
 	}
-	
+
+	// Broken code- trying to solve the 3 adjacent square box case
 	function Neighbours2(x, y)
 	{
 		var	N = y - 1,
@@ -498,9 +490,8 @@ function findPath(world, pathStart, pathEnd)
 	       		moveQueue.unshift(coorToDir(path[i],path[i+1]));
        		}
        } 
-        //------------------------------------------------------------------------
-        //------------------------------------------------------------------------
-        
+
+		        
         me.handleArrowKeys = function(keyNum) {
             if (isDead) {return;}
             
@@ -862,8 +853,8 @@ SNAKE.Obstacle = SNAKE.Obstacle || (function() {
         // ----- public methods -----
         
         /**
-        * @method getFoodElement
-        * @return {DOM Element} The div the represents the food.
+        * @method getObstacleElement
+        * @return {DOM Element} The div the represents the obstacle.
         */        
         me.getObstacleElement = function() {
             return elmObstacle; 
@@ -871,8 +862,8 @@ SNAKE.Obstacle = SNAKE.Obstacle || (function() {
         };
         
         /**
-        * Randomly places the food onto an available location on the playing board.
-        * @method randomlyPlaceFood
+        * Randomly places the obstacle onto an available location on the playing board.
+        * @method randomlyPlaceObstacle
         */    
         me.randomlyPlaceObstacle = function() {
             // if there exist some food, clear its presence from the board
@@ -889,7 +880,7 @@ SNAKE.Obstacle = SNAKE.Obstacle || (function() {
                 row = getRandomPosition(1, maxRows);
                 col = getRandomPosition(1, maxCols);
 
-                // in some cases there may not be any room to put food anywhere
+                // in some cases there may not be any room to put obstacle anywhere
                 // instead of freezing, exit out
                 numTries++;
                 if (numTries > 20000){
