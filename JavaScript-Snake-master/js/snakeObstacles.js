@@ -284,10 +284,10 @@ function findPath(world, pathStart, pathEnd)
 		S = y + 1,
 		E = x + 1,
 		W = x - 1,
-		myN = N > -1 && canWalkHere(x, N),
-		myS = S < worldHeight && canWalkHere(x, S),
-		myE = E < worldWidth && canWalkHere(E, y),
-		myW = W > -1 && canWalkHere(W, y),
+		myN = N > -1 && canWalkHere(N, x),
+		myS = S < worldHeight && canWalkHere(S, x),
+		myE = E < worldWidth && canWalkHere(y, E),
+		myW = W > -1 && canWalkHere(y, W),
 		result = [];
 		if(myN)
 		result.push({x:x, y:N});
@@ -339,10 +339,10 @@ function findPath(world, pathStart, pathEnd)
 		S = y + 1,
 		E = x + 1,
 		W = x - 1,
-		myN = N > -1 && canWalkHere(x, N),
-		myS = S < worldHeight && canWalkHere(x, S),
-		myE = E < worldWidth && canWalkHere(E, y),
-		myW = W > -1 && canWalkHere(W, y),
+		myN = N > -1 && canWalkHere(N, x),
+		myS = S < worldHeight && canWalkHere(S, x),
+		myE = E < worldWidth && canWalkHere(y, E),
+		myW = W > -1 && canWalkHere(y, W),
 		result = [];
 		result.push({x:x, y:N, on:myN, z:consecutiveneighbors(x,N,"North")});
 		result.push({x:E, y:y, on:myE, z:consecutiveneighbors(E,y,"East")});
@@ -398,7 +398,7 @@ function findPath(world, pathStart, pathEnd)
 	{
 		//console.log(me.snakeHead);
 		return ((world[x] != null) &&
-			(world[y][x] <= maxWalkableTileNum));
+			(world[x][y] <= maxWalkableTileNum));
 	};
 	
 	// Node function, returns a new object with Node properties
