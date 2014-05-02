@@ -177,289 +177,194 @@ SNAKE.Snake = SNAKE.Snake || (function() {
             blockPool[blockPool.length] = tempBlock;
         }
         
-        // ----- public methods -----
-        
-        /**
-        * This method is called when a user presses a key. It logs arrow key presses in "moveQueue", which is used when the snake needs to make its next move.
-        * @method handleArrowKeys
-        * @param {Number} keyNum A number representing the key that was pressed.
-        */
-        /*
-            Handles what happens when an arrow key is pressed. 
-            Direction explained (0 = up, etc etc)
-                    0
-                  3   1
-                    2
-        */
+    /*===================================================================================================
+     *                       A Star Implementation
+     *===================================================================================================
+     */
                 
-/* This function translates things in a coordinate format to a numerical direction where
-   0 is North, 1 is East, 2 is South, and 3 is West */
-function coorToDir (point, nextPoint) {
-		 var snakeLength = me.snakeLength;
-         var lastMove = moveQueue[0] || currentDirection;
-
-        // This means that the snake's next move is to the left
-        if (point[0] - nextPoint[0] == 1 && (lastMove !== 1 || snakeLength === 1 ) ){
-           return 3;
-        }
-        // This means that the snake's next move is to the right
-        else if (point[0] - nextPoint[0] == -1 && (lastMove !== 3 || snakeLength === 1)){
-            return 1;
-        }
-        // This means that the snake's next move is down
-        else if ((point[1] - nextPoint[1]) == -1 && (lastMove !== 0 || snakeLength === 1)){
-            return 2;
-        }
-        // This means that the snake's next move is up
-        else {
-            return 0;
-        }
-       // else return otherDir();
-    }    
-
-/*function otherDir() {
-console.log("otherDir");
-	var snakeLength = me.snakeLength;
-    var lastMove = moveQueue[0] || currentDirection;
-    if (lastMove !== 1 || snakeLength === 1 ) {
-            return 3;
-        }
-        // This means that the snake's next move is to the right
-        else if (lastMove !== 3 || snakeLength === 1){
-            return 1;
-        }
-        // This means that the snake's next move is down
-        else if (lastMove !== 0 || snakeLength === 1){
-            return 2;
-        }
-        // This means that the snake's next move is up
-        else {
-            return 0;
-        }
-
-}*/
-
-// This is the function that uses A* to find the shortest path
-function findPath(world, pathStart, pathEnd)
-{
-
-	//console.log(pathStart, pathEnd);
-	//console.log(world);
-  // shortcuts for speed
-	var	abs = Math.abs;
-	var	max = Math.max;
-	var	pow = Math.pow;
-	var	sqrt = Math.sqrt;
- 
-	// the world data are integers:
-	// anything higher than this number is considered blocked
-	// this is handy is you use numbered sprites, more than one
-	// of which is walkable road, grass, mud, etc
-	var maxWalkableTileNum = 0;
- 
-	// keep track of the world dimensions
-	var worldWidth = world[0].length;
-	var worldHeight = world.length;
-	var worldSize =	worldWidth * worldHeight;
+	/* This function translates things in a coordinate format to a numerical direction where
+	 * 0 is North, 1 is East, 2 is South, and 3 is West 
+	 */
+	function coorToDir (point, nextPoint) {
+			 var snakeLength = me.snakeLength;
+	         var lastMove = moveQueue[0] || currentDirection;
 	
-	// we are using Manhattan distance (no diagonals) 
-	var distanceFunction = ManhattanDistance;
-	var findneighbors = function(){}; // empty
-
-
-	// calculates distance	
-	function ManhattanDistance(Point, Goal)
-	{	
-		return abs(Point.x - Goal.x) + abs(Point.y - Goal.y);
-	}
+	        // This means that the snake's next move is to the left
+	        if (point[0] - nextPoint[0] == 1 && (lastMove !== 1 || snakeLength === 1 ) ){
+	           return 3;
+	        }
+	        // This means that the snake's next move is to the right
+	        else if (point[0] - nextPoint[0] == -1 && (lastMove !== 3 || snakeLength === 1)){
+	            return 1;
+	        }
+	        // This means that the snake's next move is down
+	        else if ((point[1] - nextPoint[1]) == -1 && (lastMove !== 0 || snakeLength === 1)){
+	            return 2;
+	        }
+	        // This means that the snake's next move is up
+	        else {
+	            return 0;
+	        }
+	    } 
 	
-	 // neighbors functions, used by findneighbors function
-	// to locate adjacent available cells that aren't blocked
- 
-	// Returns every available North, South, East or West
-	// cell that is empty.
-	function neighbors(x, y)
+	// This is the function that uses A* to find the shortest path
+	function snakePath(world, pathStart, pathEnd)
 	{
-		var	N = y - 1,
-		S = y + 1,
-		E = x + 1,
-		W = x - 1,
-		myN = N > -1 && canWalkHere(x, N),
-		myS = S < worldHeight && canWalkHere(x, S),
-		myE = E < worldWidth && canWalkHere(E, y),
-		myW = W > -1 && canWalkHere(W, y),
-		result = [];
-		if(myN)
-		result.push({x:x, y:N});
-		if(myE)
-		result.push({x:E, y:y,});
-		if(myS)
-		result.push({x:x, y:S});
-		if(myW)
-		result.push({x:W, y:y});
-		findneighbors(myN, myS, myE, myW, N, S, E, W, result);
-		return result;
-	}
-
-	function consecutiveneighbors(x,y,direction) {
-		var counter = 0;
-        switch (direction) {
-            case "North":
-                while (canWalkHere(x,y) == true){
-                	counter ++;
-                	y -- ;
-                }
-                break;    
-            case "South":
-                while (canWalkHere(x,y) == true){
-                	counter ++;
-                	y ++ ;
-                }
-                break;    
-            case "East":
-                while (canWalkHere(x,y) == true){
-                	counter ++;
-                	x ++ ;
-                }
-                break;    
-            case "West":
-                while (canWalkHere(x,y) == true){
-                	counter ++;
-                	x -- ;
-                }
-                break;  
-            }	
-            //console.log(counter, direction);
-        return counter;
-        }
-
-	function checkChute(x,y,direction)
-	{
-		var ns = neighbors2(x, y);
-		var chute = false;
-        switch (direction) {
-            case "North":
-                while (worldHeight > y > -1 && worldWidth > x > -1 && canWalkHere(x-1, y) == false && canWalkHere(x+1, y) == false){
-                	if (canWalkHere(x, y - 1) == false){
-	                	return true;
-                	}
-                	else{
-                		y -- ;
-                	}
-                }
-                break;    
-            case "South":
-                while (worldHeight > y > -1 && worldWidth > x > -1 && canWalkHere(x-1, y) == false && canWalkHere(x+1, y) == false){
-                	if (canWalkHere(x, y + 1) == false){
-	                	return true;
-                	}
-                	else{
-                		y ++ ;
-                	}
-                }
-
-                break;    
-            case "East":
-                while (worldHeight > y > -1 && worldWidth > x > -1 && canWalkHere(x, y-1) == false && canWalkHere(x,y+1) == false){
-                	if (canWalkHere(x + 1, y) == false){
-	                	return true;
-                	}
-                	else{
-                		x ++ ;
-                	}
-                }
-
-                break;    
-            case "West":
-                while (worldHeight - 1 > y > 0 && worldWidth - 1 > x > 0 && canWalkHere(x, y-1) == false && canWalkHere(x, y+1) == false){
-                	if (canWalkHere(x - 1, y) == false){
-	                	return true;
-                	}
-                	else{
-                		x -- ;
-                	}
-                }
-	}
-	return false;
-	}
-
-	function neighbors2(x, y)
-	{
-		var	N = y - 1,
-		S = y + 1,
-		E = x + 1,
-		W = x - 1,
-		myN = N > -1 && canWalkHere(x, N),
-		myS = S < worldHeight && canWalkHere(x, S),
-		myE = E < worldWidth && canWalkHere(E, y),
-		myW = W > -1 && canWalkHere(W, y),
-		result = [];
-		result.push({x:x, y:N, on:myN, z:consecutiveneighbors(x,N,"North")});
-		result.push({x:E, y:y, on:myE, z:consecutiveneighbors(E,y,"East")});
-		result.push({x:x, y:S, on:myS, z:consecutiveneighbors(x,S,"South")});
-		result.push({x:W, y:y, on:myW, z:consecutiveneighbors(W,y,"West")});
-		findneighbors(myN, myS, myE, myW, N, S, E, W, result);
-		return result;
-	}
-
-
-
-	function moveSafe(){
-	var ns = neighbors2(me.snakeHead.col, me.snakeHead.row);
-	if ((ns[0].on == false) && (ns[1].on == true && ns[3].on == true)) {
-		if (ns[3].z > ns[1].z && !(checkChute(ns[3].x,ns[3].y,"West"))) {
-			console.log(checkChute(ns[3].x,ns[3].y,"West"));
-			moveQueue.unshift(coorToDir(pathStart, [ns[3].x,ns[3].y]));
-		}
-		else {
-			console.log(checkChute(ns[1].x,ns[1].y,"East"));
-			moveQueue.unshift(coorToDir(pathStart, [ns[1].x,ns[1].y]));
-		}
-	}
-	else if ((ns[0].on == true && ns[2].on == true) && (ns[1].on == false && ns[3].on == false)) {
-		if (ns[2].z > ns[0].z && !(checkChute(ns[2].x,ns[2].y,"South"))) {
-			console.log(checkChute(ns[3].x,ns[3].y,"South"));
-			moveQueue.unshift(coorToDir(pathStart, [ns[2].x,ns[2].y]));
-		}
-		else {
-			console.log(checkChute(ns[0].x,ns[0].y,"North"));
-			moveQueue.unshift(coorToDir(pathStart, [ns[0].x,ns[0].y]));
-		}
-	}
-	else {
-		ns = neighbors2(me.snakeHead.col, me.snakeHead.row);
-		console.log("else chute check");
-		if (ns[0].on && !(checkChute(ns[0].x,ns[0].y,"North"))){
-			console.log("North Safe");
-			moveQueue.unshift(coorToDir(pathStart, [ns[0].x,ns[0].y]));
-		}
-		else if (ns[1].on && !(checkChute(ns[1].x,ns[1].y,"East"))){
-			console.log("East Safe");
-			moveQueue.unshift(coorToDir(pathStart, [ns[1].x,ns[1].y]));
-		}
-		else if (ns[2].on && !(checkChute(ns[2].x,ns[2].y,"South"))){
-			console.log("South Safe");
-			moveQueue.unshift(coorToDir(pathStart, [ns[2].x,ns[2].y]));
-		}
-		else if (ns[3].on && !(checkChute(ns[3].x,ns[3].y,"West"))){
-			console.log("West Safe");
-			moveQueue.unshift(coorToDir(pathStart, [ns[3].x,ns[3].y]));
-		}
-		else{
-			ns = neighbors(me.snakeHead.col, me.snakeHead.row);
-			moveQueue.unshift(coorToDir(pathStart, [ns[0].x,ns[0].y]));
-		}
-	}
+	 	// Any tile higher than 0 is considered and object, and all lower are safe to walk on 
+		var maxWalkableTileNum = 0;
+	 
+		// Keep track of the world dimensions
+		var worldWidth = world[0].length;
+		var worldHeight = world.length;
+		var worldSize =	worldWidth * worldHeight;
+		
+		// Used in finding openNeighbors or allNeighbors
+		var findneighbors = function(){};
 	
-	console.log(pathStart, [ns[0].x,ns[0].y]);
 	
-	}
+		// Calculates Manhattan Distance	
+		function ManhattanDistance(Point, Goal)
+		{	
+			return Math.abs(Point.x - Goal.x) + Math.abs(Point.y - Goal.y);
+		}
+	 
+		// Returns every open neighbor
+		function openNeighbors(x, y)
+		{
+			var	N = y - 1,
+			S = y + 1,
+			E = x + 1,
+			W = x - 1,
+			openN = N > -1 && canWalkHere(x, N),
+			openS = S < worldHeight && canWalkHere(x, S),
+			openE = E < worldWidth && canWalkHere(E, y),
+			openW = W > -1 && canWalkHere(W, y),
+			result = [];
+			if(openN)
+			result.push({x:x, y:N});
+			if(openE)
+			result.push({x:E, y:y,});
+			if(openS)
+			result.push({x:x, y:S});
+			if(openW)
+			result.push({x:W, y:y});
+			findneighbors(openN, openS, openE, openW, N, S, E, W, result);
+			return result;
+		}
+		
+		/* Returns all neighboring tiles and whether or not they are walkable and how many more
+		 * walkable neighbors are in that direction
+		 */
+		function allNeighbors(x, y)
+		{
+			var	N = y - 1,
+			S = y + 1,
+			E = x + 1,
+			W = x - 1,
+			openN = N > -1 && canWalkHere(x, N),
+			openS = S < worldHeight && canWalkHere(x, S),
+			openE = E < worldWidth && canWalkHere(E, y),
+			openW = W > -1 && canWalkHere(W, y),
+			result = [];
+			result.push({x:x, y:N, on:openN, z:consecutiveneighbors(x,N,"North")});
+			result.push({x:E, y:y, on:openE, z:consecutiveneighbors(E,y,"East")});
+			result.push({x:x, y:S, on:openS, z:consecutiveneighbors(x,S,"South")});
+			result.push({x:W, y:y, on:openW, z:consecutiveneighbors(W,y,"West")});
+			findneighbors(openN, openS, openE, openW, N, S, E, W, result);
+			return result;
+		}
 	
-	/*function moveSafe(){
-		var ns = neighbors2(me.snakeHead.col, me.snakeHead.row);
-		if ((ns[0].on == false || ns[2].on == false) && (ns[1].on == true && ns[3].on == true)) {
-			if ((checkChute(ns[3].x, ns[3].y) == true && checkChute(ns[1].x, ns[1].y) == true) || (checkChute(ns[3].x, ns[3].y) == false && checkChute(ns[1].x, ns[1].y) == false)){
-				if (ns[3].cn > ns[1].cn) {
+		// Returns the number of consecutive walkable neighbors are in a given direction
+		function consecutiveneighbors(x,y,direction) 
+		{
+			var counter = 0;
+	        switch (direction) {
+	            case "North":
+	                while (canWalkHere(x,y) == true){
+	                	counter ++;
+	                	y -- ;
+	                }
+	                break;    
+	            case "South":
+	                while (canWalkHere(x,y) == true){
+	                	counter ++;
+	                	y ++ ;
+	                }
+	                break;    
+	            case "East":
+	                while (canWalkHere(x,y) == true){
+	                	counter ++;
+	                	x ++ ;
+	                }
+	                break;    
+	            case "West":
+	                while (canWalkHere(x,y) == true){
+	                	counter ++;
+	                	x -- ;
+	                }
+	                break;  
+	            }	
+	        return counter;
+	    }
+	
+		// Checks if there is a chute (a oneblock wide tunnel with no escape) in the given direction
+		function checkChute(x,y,direction)
+		{
+	        switch (direction) {
+	            case "North":
+	                while (worldHeight > y > -1 && worldWidth > x > -1 && canWalkHere(x-1, y) == false && canWalkHere(x+1, y) == false){
+	                	if (canWalkHere(x, y - 1) == false){
+		                	return true;
+	                	}
+	                	else{
+	                		y -- ;
+	                	}
+	                }
+	                break;    
+	            case "South":
+	                while (worldHeight > y > -1 && worldWidth > x > -1 && canWalkHere(x-1, y) == false && canWalkHere(x+1, y) == false){
+	                	if (canWalkHere(x, y + 1) == false){
+		                	return true;
+	                	}
+	                	else{
+	                		y ++ ;
+	                	}
+	                }
+	
+	                break;    
+	            case "East":
+	                while (worldHeight > y > -1 && worldWidth > x > -1 && canWalkHere(x, y-1) == false && canWalkHere(x,y+1) == false){
+	                	if (canWalkHere(x + 1, y) == false){
+		                	return true;
+	                	}
+	                	else{
+	                		x ++ ;
+	                	}
+	                }
+	
+	                break;    
+	            case "West":
+	                while (worldHeight - 1 > y > 0 && worldWidth - 1 > x > 0 && canWalkHere(x, y-1) == false && canWalkHere(x, y+1) == false){
+	                	if (canWalkHere(x - 1, y) == false){
+		                	return true;
+	                	}
+	                	else{
+	                		x -- ;
+	                	}
+	                }
+				}
+				return false;
+		}
+	
+		// Function that choses a safe direction to move to intelligently stall the snake when the food is unreachable
+		function moveSafe()
+		{
+			/* Checks cases where only option is left or right and chooses option that isn't a chute and has the 
+			 * most consecutive walkable neighbors
+			 */
+			var ns = allNeighbors(me.snakeHead.col, me.snakeHead.row);
+			if ((ns[0].on == false) && (ns[1].on == true && ns[3].on == true)) {
+				if (ns[3].z > ns[1].z && !(checkChute(ns[3].x,ns[3].y,"West"))) {
 					console.log(checkChute(ns[3].x,ns[3].y,"West"));
 					moveQueue.unshift(coorToDir(pathStart, [ns[3].x,ns[3].y]));
 				}
@@ -468,21 +373,12 @@ function findPath(world, pathStart, pathEnd)
 					moveQueue.unshift(coorToDir(pathStart, [ns[1].x,ns[1].y]));
 				}
 			}
-			else{
-				if (checkChute(ns[3].x, ns[3].y) == false){
-					console.log(checkChute(ns[3].x,ns[3].y,"West"));
-					moveQueue.unshift(coorToDir(pathStart, [ns[3].x,ns[3].y]));
-				}
-				else {
-					console.log(checkChute(ns[1].x,ns[1].y,"East"));
-					moveQueue.unshift(coorToDir(pathStart, [ns[1].x,ns[1].y]));
-				}
-			}
-		}
-		else if ((ns[0].on == true && ns[2].on == true) && (ns[1].on == false && ns[3].on == false)) {
-			if ((checkChute(ns[0].x, ns[0].y) == true && checkChute(ns[2].x, ns[2].y) == true) || (checkChute(ns[0].x, ns[0].y) == false && checkChute(ns[2].x, ns[2].y) == false)){
-				if (ns[2].cn > ns[0].cn) {
-					console.log(checkChute(ns[2].x,ns[2].y,"South"));
+			/* Checks cases where only option is up or down and chooses option that isn't a chute and has the 
+			 * most consecutive walkable neighbors
+			 */
+			else if ((ns[0].on == true && ns[2].on == true) && (ns[1].on == false && ns[3].on == false)) {
+				if (ns[2].z > ns[0].z && !(checkChute(ns[2].x,ns[2].y,"South"))) {
+					console.log(checkChute(ns[3].x,ns[3].y,"South"));
 					moveQueue.unshift(coorToDir(pathStart, [ns[2].x,ns[2].y]));
 				}
 				else {
@@ -491,181 +387,160 @@ function findPath(world, pathStart, pathEnd)
 				}
 			}
 			else {
-				if (checkChute(ns[0].x, ns[0].y) == false){
-					console.log(false);
+				// Finds direction that is not a chute and walkable.
+				ns = allNeighbors(me.snakeHead.col, me.snakeHead.row);
+				console.log("else chute check");
+				if (ns[0].on && !(checkChute(ns[0].x,ns[0].y,"North"))){
+					console.log("North Safe");
 					moveQueue.unshift(coorToDir(pathStart, [ns[0].x,ns[0].y]));
 				}
-				else {
-					console.log(true);
+				else if (ns[1].on && !(checkChute(ns[1].x,ns[1].y,"East"))){
+					console.log("East Safe");
+					moveQueue.unshift(coorToDir(pathStart, [ns[1].x,ns[1].y]));
+				}
+				else if (ns[2].on && !(checkChute(ns[2].x,ns[2].y,"South"))){
+					console.log("South Safe");
 					moveQueue.unshift(coorToDir(pathStart, [ns[2].x,ns[2].y]));
 				}
-			}
-		}
-		else {
-			ns = neighbors(me.snakeHead.col, me.snakeHead.row);
-			moveQueue.unshift(coorToDir(pathStart, [ns[0].x,ns[0].y]));
+				else if (ns[3].on && !(checkChute(ns[3].x,ns[3].y,"West"))){
+					console.log("West Safe");
+					moveQueue.unshift(coorToDir(pathStart, [ns[3].x,ns[3].y]));
+				}
+				else{
+					// Last case scenario where snake is trapped no matter what. Moves to first open tile.
+					ns = openNeighbors(me.snakeHead.col, me.snakeHead.row);
+					moveQueue.unshift(coorToDir(pathStart, [ns[0].x,ns[0].y]));
+				}
+			}		
 		}
 		
-		console.log(pathStart, [ns[0].x,ns[0].y]);
-	
-	}*/
-	
-	function checkBody(x,y){
-		//console.log(me.snakeBody);
-		Object.keys(me.snakeBody).forEach(function(key) {
-        if((x === me.snakeBody[key].row) && (y === me.snakeBody[key].col)){
-	        return false
-	        console.log("oops");
-        }
-        
-         });
-	return true;
-	}
-	
-	// returns boolean value (world cell is available and open)
-	function canWalkHere(x, y)
-	{
-		//console.log(me.snakeHead);
-		return ((world[x] != null) &&
-			(world[y][x] <= maxWalkableTileNum));
-	};
-	
-	// Node function, returns a new object with Node properties
-	// Used in the calculatePath function to store route costs, etc.
-	function Node(Parent, Point)
-	{
-		var newNode = {
-			// pointer to another Node object
-			Parent:Parent,
-			// array index of this Node in the world linear array
-			value:Point.x + (Point.y * worldWidth),
-			// the location coordinates of this Node
-			x:Point.x,
-			y:Point.y,
-			// the distanceFunction cost to get
-			// TO this Node from the START
-			f:0,
-			// the distanceFunction cost to get
-			// from this Node to the GOAL
-			g:0
-		};
- 
-		return newNode;
-	}
-	
-    
-
-	// Path function, executes AStar algorithm operations
-	function calculatePath()
-	{
-		// create Nodes from the Start and End x,y coordinates
-		var	mypathStart = Node(null, {x:pathStart[0], y:pathStart[1]});
-		var mypathEnd = Node(null, {x:pathEnd[0], y:pathEnd[1]});
-		// create an array that will contain all world cells
-		var AStar = new Array(worldSize);
-		// list of currently open Nodes
-		var Open = [mypathStart];
-		// list of closed Nodes
-		var Closed = [];
-		// list of the final output array
-		var result = [];
-		
-		// reference to a Node (that is nearby)
-		var myneighbors;
-		// reference to a Node (that we are considering now)
-		var myNode;
-		// reference to a Node (that starts a path in question)
-		var myPath;
-		// temp integer variables used in the calculations
-		var length, max, min, i, j;
-		// iterate through the open list until none are left
-		while(length = Open.length)
+		// returns boolean to tell if tile is walkable
+		function canWalkHere(x, y)
 		{
-			max = worldSize;
-			min = -1;
-			for(i = 0; i < length; i++)
-			{
-				if(Open[i].f < max)
-				{
-					max = Open[i].f;
-					min = i;
-				}
-			}
-			// grab the next node and remove it from Open array
-			myNode = Open.splice(min, 1)[0];
+			return ((world[x] != null) &&
+				(world[y][x] <= maxWalkableTileNum));
+		};
+		
+		// Creates a node object with intialized properties
+		function Node(Parent, Point)
+		{
+			var newNode = {
+				// pointer to another Node object
+				Parent:Parent,
+				// array index of this Node in the world linear array
+				value:Point.x + (Point.y * worldWidth),
+				// the location coordinates of this Node
+				x:Point.x,
+				y:Point.y,
+				// the distanceFunction cost to get
+				// TO this Node from the START
+				f:0,
+				// the distanceFunction cost to get
+				// from this Node to the GOAL
+				g:0
+			};
+	 
+			return newNode;
+		}
+		
+	    
+	
+		// Algorithm that implements A* to find shortest path
+		function astarPath()
+		{
+			// create Nodes from the Start and End x,y coordinates
+			var	mypathStart = Node(null, {x:pathStart[0], y:pathStart[1]});
+			var mypathEnd = Node(null, {x:pathEnd[0], y:pathEnd[1]});
+			// create an array that will contain all world cells
+			var AStar = new Array(worldSize);
+			// list of currently open Nodes
+			var Open = [mypathStart];
+			// list of closed Nodes
+			var Closed = [];
+			// list of the final output array
+			var result = [];
 			
-			// is it the destination node?
-			if(myNode.value === mypathEnd.value)
+			// reference to a Node (that is nearby)
+			var myneighbors;
+			// reference to a Node (that we are considering now)
+			var myNode;
+			// reference to a Node (that starts a path in question)
+			var myPath;
+			// temp integer variables used in the calculations
+			var length, max, min, i, j;
+			// iterate through the open list until none are left
+			while(length = Open.length)
 			{
-				
-				myPath = Closed[Closed.push(myNode) - 1];
-				do
+				max = worldSize;
+				min = -1;
+				for(i = 0; i < length; i++)
 				{
-					result.push([myPath.x, myPath.y]);
-				}
-				while (myPath = myPath.Parent);
-				// clear the working arrays
-				AStar = Closed = Open = [];
-				// we want to return start to finish
-				result.reverse();
-				
-				//console.log(result[0]);
-			}
-			else // not the destination
-			{
-				// find which nearby nodes are walkable
-				myneighbors = neighbors(myNode.x, myNode.y);
-				// test each one that hasn't been tried already
-				for(i = 0, j = myneighbors.length; i < j; i++)
-				{
-					myPath = Node(myNode, myneighbors[i]);
-					if (!AStar[myPath.value])
+					if(Open[i].f < max)
 					{
-						// estimated cost of this particular route so far
-						myPath.g = myNode.g + distanceFunction(myneighbors[i], myNode);
-						// estimated cost of entire guessed route to the destination
-						myPath.f = myPath.g + distanceFunction(myneighbors[i], mypathEnd);
-						// remember this new path for testing above
-						Open.push(myPath);
-						// mark this node in the world graph as visited
-						AStar[myPath.value] = true;
+						max = Open[i].f;
+						min = i;
 					}
 				}
-				// remember this route as having no more untested options
-				Closed.push(myNode);
+				// grab the next node and remove it from Open array
+				myNode = Open.splice(min, 1)[0];
+				
+				// is it the destination node?
+				if(myNode.value === mypathEnd.value)
+				{
+					
+					myPath = Closed[Closed.push(myNode) - 1];
+					do
+					{
+						result.push([myPath.x, myPath.y]);
+					}
+					while (myPath = myPath.Parent);
+					// clear the working arrays
+					AStar = Closed = Open = [];
+					// we want to return start to finish
+					result.reverse();
+					
+					//console.log(result[0]);
+				}
+				else // not the destination
+				{
+					// find which nearby nodes are walkable
+					myneighbors = openNeighbors(myNode.x, myNode.y);
+					// test each one that hasn't been tried already
+					for(i = 0, j = myneighbors.length; i < j; i++)
+					{
+						myPath = Node(myNode, myneighbors[i]);
+						if (!AStar[myPath.value])
+						{
+							// estimated cost of this particular route so far
+							myPath.g = myNode.g + ManhattanDistance(myneighbors[i], myNode);
+							// estimated cost of entire guessed route to the destination
+							myPath.f = myPath.g + ManhattanDistance(myneighbors[i], mypathEnd);
+							// remember this new path for testing above
+							Open.push(myPath);
+							// mark this node in the world graph as visited
+							AStar[myPath.value] = true;
+						}
+					}
+					// close so you know route has been fully tested
+					Closed.push(myNode);
+				}
+			} 
+			// If A* was able to find a shortest path, make the snake follow it, else call movesafe()
+			if (result[0] != null){
+				moveQueue.unshift(coorToDir(result[0],result[1]));
 			}
-		} // keep iterating until until the Open list is empty
-		//return result;
-		if (result[0] != null){
-			moveQueue.unshift(coorToDir(result[0],result[1]));
+			else {
+				moveSafe();
+			}
 		}
-		else {
-		//console.log("uh oh");
-		moveSafe();
-			//findPath(world, pathStart, pathEnd)
-			//moveQueue.unshift(otherDir());
-		}
-
-		//console.log(coorToDir(result[0], result[1]));
-		//return coorToDir(result[0], result[1]);
+		return astarPath();
 	}
-
-// actually calculate the a-star path!
-	// this returns an array of coordinates
-	// that is empty if no path is possible
-	//console.log(result);
-	return calculatePath();
 	
-	
- 
-}
-       function moveThrough(path){
-       console.log(path);
-       		for (var i = 0; i < path.length-1; i++){
-	       		moveQueue.unshift(coorToDir(path[i],path[i+1]));
-       		}
-       } 
-
+	/*===================================================================================================
+     *                       End of A Star Implementation
+     *===================================================================================================
+     */
+		      
 		        
         me.handleArrowKeys = function(keyNum) {
             if (isDead) {return;}
@@ -758,7 +633,7 @@ function findPath(world, pathStart, pathEnd)
             
             pathStart = [newHead.col, newHead.row];
             pathEnd = [xFood, yFood];
-            findPath(grid, pathStart, pathEnd);
+            snakePath(grid, pathStart, pathEnd);
             
         };
         
@@ -1063,7 +938,7 @@ SNAKE.Obstacle = SNAKE.Obstacle || (function() {
                     col = -1;
                     break; 
                 } 
-            }
+          }
 
             playingBoard.grid[row][col] = playingBoard.getGridObstacleValue();
             oRow = row;
@@ -1184,7 +1059,7 @@ SNAKE.Board = SNAKE.Board || (function() {
             
             elmAboutPanel = document.createElement("div");
             elmAboutPanel.className = "snake-panel-component";
-            elmAboutPanel.innerHTML = "<a href='http://patorjk.com/blog/software/' class='snake-link'>more patorjk.com apps</a> - <a href='https://github.com/patorjk/JavaScript-Snake' class='snake-link'>source code</a>";
+            elmAboutPanel.innerHTML = "<a href='http://patorjk.com/blog/software/' class='snake-link'>more patorjk.com apps</a>";
             
             elmLengthPanel = document.createElement("div");
             elmLengthPanel.className = "snake-panel-component";
@@ -1454,12 +1329,11 @@ SNAKE.Board = SNAKE.Board || (function() {
             }
             
             myFood.randomlyPlaceFood();
+            
+            // Generates 20 wall obstacles at start of game
             for (var i = 0; i < 20; i++){
             	myObstacle[i].randomlyPlaceObstacle();
             }
-
-            //myObstacle.randomlyPlaceObstacle();
-            //myObstacle2.randomlyPlaceObstacle();
 
             // setup event listeners
             
@@ -1509,11 +1383,6 @@ SNAKE.Board = SNAKE.Board || (function() {
         me.foodEaten = function() {
             elmLengthPanel.innerHTML = "Length: " + mySnake.snakeLength;
             myFood.randomlyPlaceFood();
-            /*for (var i = 0; i < 20; i++){
-            	myObstacle[i].randomlyPlaceObstacle();            	
-            }  */      
-            //myObstacle.randomlyPlaceObstacle();
-            //myObstacle2.randomlyPlaceObstacle();
         };
         
         /**
