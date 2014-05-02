@@ -115,7 +115,7 @@ SNAKE.Snake = SNAKE.Snake || (function() {
         var me = this,
             playingBoard = config.playingBoard,
             myId = instanceNumber++,
-            growthIncr = 5,
+            growthIncr = 3,
             moveQueue = [], // a queue that holds the next moves of the snake
             currentDirection = 1, // 0: up, 1: left, 2: down, 3: right
             columnShift = [0, 1, 0, -1],
@@ -264,7 +264,7 @@ function findPath(world, pathStart, pathEnd)
 	
 	// we are using Manhattan distance (no diagonals) 
 	var distanceFunction = ManhattanDistance;
-	var findNeighbours = function(){}; // empty
+	var findneighbors = function(){}; // empty
 
 
 	// calculates distance	
@@ -273,12 +273,12 @@ function findPath(world, pathStart, pathEnd)
 		return abs(Point.x - Goal.x) + abs(Point.y - Goal.y);
 	}
 	
-	 // Neighbours functions, used by findNeighbours function
+	 // neighbors functions, used by findneighbors function
 	// to locate adjacent available cells that aren't blocked
  
 	// Returns every available North, South, East or West
 	// cell that is empty.
-	function Neighbours(x, y)
+	function neighbors(x, y)
 	{
 		var	N = y - 1,
 		S = y + 1,
@@ -292,45 +292,91 @@ function findPath(world, pathStart, pathEnd)
 		if(myN)
 		result.push({x:x, y:N});
 		if(myE)
-		result.push({x:E, y:y});
+		result.push({x:E, y:y,});
 		if(myS)
 		result.push({x:x, y:S});
 		if(myW)
 		result.push({x:W, y:y});
-		findNeighbours(myN, myS, myE, myW, N, S, E, W, result);
+		findneighbors(myN, myS, myE, myW, N, S, E, W, result);
 		return result;
 	}
 
-	// Broken code- trying to solve the 3 adjacent square box case
-	function Neighbours2(x, y)
+	function consecutiveneighbors(x,y,direction) {
+		var counter = 0;
+        switch (direction) {
+            case "North":
+                while (canWalkHere(x,y) == true){
+                	counter ++;
+                	y -- ;
+                }
+                break;    
+            case "South":
+                while (canWalkHere(x,y) == true){
+                	counter ++;
+                	y ++ ;
+                }
+                break;    
+            case "East":
+                while (canWalkHere(x,y) == true){
+                	counter ++;
+                	x ++ ;
+                }
+                break;    
+            case "West":
+                while (canWalkHere(x,y) == true){
+                	counter ++;
+                	x -- ;
+                }
+                break;  
+            }	
+            console.log(counter);
+        return counter;
+        }
+
+	function neighbors2(x, y)
 	{
 		var	N = y - 1,
 		S = y + 1,
 		E = x + 1,
 		W = x - 1,
-		myN = N > -1 && canWalkHere(x, N) && (canWalkHere(x + 1, N) && canWalkHere(x - 1, N) && (canWalkHere(x, N - 1))),
-		myS = S < worldHeight && canWalkHere(x, S) && (canWalkHere(x + 1, S) && canWalkHere(x - 1, S) && canWalkHere(x, S + 1)),
-		myE = E < worldWidth && canWalkHere(E, y) && (canWalkHere(E, y + 1) && canWalkHere(E, y - 1) && canWalkHere(E + 1, y)),
-		myW = W > -1 && canWalkHere(W, y) && (canWalkHere(W, y + 1) && canWalkHere(W, y - 1) && canWalkHere(W - 1, y)),
+		myN = N > -1 && canWalkHere(x, N),
+		myS = S < worldHeight && canWalkHere(x, S),
+		myE = E < worldWidth && canWalkHere(E, y),
+		myW = W > -1 && canWalkHere(W, y),
 		result = [];
-		if(myN)
-		result.push({x:x, y:N});
-		if(myE)
-		result.push({x:E, y:y});
-		if(myS)
-		result.push({x:x, y:S});
-		if(myW)
-		result.push({x:W, y:y});
-		findNeighbours(myN, myS, myE, myW, N, S, E, W, result);
+		result.push({x:x, y:N, on:myN, z:consecutiveneighbors(x,N,"North")});
+		result.push({x:E, y:y, on:myE, z:consecutiveneighbors(E,y,"East")});
+		result.push({x:x, y:S, on:myS, z:consecutiveneighbors(x,S,"South")});
+		result.push({x:W, y:y, on:myW, z:consecutiveneighbors(W,y,"West")});
+		findneighbors(myN, myS, myE, myW, N, S, E, W, result);
 		return result;
 	}
-	
+
+
+
 	function moveSafe(){
-	var ns = Neighbours(me.snakeHead.col, me.snakeHead.row);
-	/*if (ns[0] === null) {
-		ns = Neighbours(me.snakeHead.col, me.snakeHead.row);
-	}*/
-	moveQueue.unshift(coorToDir(pathStart, [ns[0].x,ns[0].y]));
+	var ns = neighbors2(me.snakeHead.col, me.snakeHead.row);
+	if ((ns[0].on == false) && (ns[1].on == true && ns[3].on == true)) {
+		if (ns[3].z > ns[1].z) {
+			moveQueue.unshift(coorToDir(pathStart, [ns[3].x,ns[3].y]));
+		}
+		else {
+			moveQueue.unshift(coorToDir(pathStart, [ns[1].x,ns[1].y]));
+		}
+	}
+	else if ((ns[0].on == true && ns[2].on == true) && (ns[1].on == false && ns[3].on == false)) {
+		if (ns[2].z > ns[0].z) {
+			moveQueue.unshift(coorToDir(pathStart, [ns[2].x,ns[2].y]));
+		}
+		else {
+			moveQueue.unshift(coorToDir(pathStart, [ns[0].x,ns[0].y]));
+		}
+	}
+	else {
+		ns = neighbors(me.snakeHead.col, me.snakeHead.row);
+		moveQueue.unshift(coorToDir(pathStart, [ns[0].x,ns[0].y]));
+	}
+	
 	console.log(pathStart, [ns[0].x,ns[0].y]);
 	
 	}
@@ -396,7 +442,7 @@ function findPath(world, pathStart, pathEnd)
 		var result = [];
 		
 		// reference to a Node (that is nearby)
-		var myNeighbours;
+		var myneighbors;
 		// reference to a Node (that we are considering now)
 		var myNode;
 		// reference to a Node (that starts a path in question)
@@ -439,17 +485,17 @@ function findPath(world, pathStart, pathEnd)
 			else // not the destination
 			{
 				// find which nearby nodes are walkable
-				myNeighbours = Neighbours(myNode.x, myNode.y);
+				myneighbors = neighbors(myNode.x, myNode.y);
 				// test each one that hasn't been tried already
-				for(i = 0, j = myNeighbours.length; i < j; i++)
+				for(i = 0, j = myneighbors.length; i < j; i++)
 				{
-					myPath = Node(myNode, myNeighbours[i]);
+					myPath = Node(myNode, myneighbors[i]);
 					if (!AStar[myPath.value])
 					{
 						// estimated cost of this particular route so far
-						myPath.g = myNode.g + distanceFunction(myNeighbours[i], myNode);
+						myPath.g = myNode.g + distanceFunction(myneighbors[i], myNode);
 						// estimated cost of entire guessed route to the destination
-						myPath.f = myPath.g + distanceFunction(myNeighbours[i], mypathEnd);
+						myPath.f = myPath.g + distanceFunction(myneighbors[i], mypathEnd);
 						// remember this new path for testing above
 						Open.push(myPath);
 						// mark this node in the world graph as visited
