@@ -284,10 +284,10 @@ function findPath(world, pathStart, pathEnd)
 		S = y + 1,
 		E = x + 1,
 		W = x - 1,
-		myN = N > -1 && canWalkHere(N, x),
-		myS = S < worldHeight && canWalkHere(S, x),
-		myE = E < worldWidth && canWalkHere(y, E),
-		myW = W > -1 && canWalkHere(y, W),
+		myN = N > -1 && canWalkHere(x, N),
+		myS = S < worldHeight && canWalkHere(x, S),
+		myE = E < worldWidth && canWalkHere(E, y),
+		myW = W > -1 && canWalkHere(W, y),
 		result = [];
 		if(myN)
 		result.push({x:x, y:N});
@@ -329,9 +329,59 @@ function findPath(world, pathStart, pathEnd)
                 }
                 break;  
             }	
-            console.log(counter);
+            //console.log(counter, direction);
         return counter;
         }
+
+	function checkChute(x,y,direction)
+	{
+		var ns = neighbors2(x, y);
+		var chute = false;
+        switch (direction) {
+            case "North":
+                while (worldHeight > y > -1 && worldWidth > x > -1 && canWalkHere(x-1, y) == false && canWalkHere(x+1, y) == false){
+                	if (canWalkHere(x, y - 1) == false){
+	                	return true;
+                	}
+                	else{
+                		y -- ;
+                	}
+                }
+                break;    
+            case "South":
+                while (worldHeight > y > -1 && worldWidth > x > -1 && canWalkHere(x-1, y) == false && canWalkHere(x+1, y) == false){
+                	if (canWalkHere(x, y + 1) == false){
+	                	return true;
+                	}
+                	else{
+                		y ++ ;
+                	}
+                }
+
+                break;    
+            case "East":
+                while (worldHeight > y > -1 && worldWidth > x > -1 && canWalkHere(x, y-1) == false && canWalkHere(x,y+1) == false){
+                	if (canWalkHere(x + 1, y) == false){
+	                	return true;
+                	}
+                	else{
+                		x ++ ;
+                	}
+                }
+
+                break;    
+            case "West":
+                while (worldHeight - 1 > y > 0 && worldWidth - 1 > x > 0 && canWalkHere(x, y-1) == false && canWalkHere(x, y+1) == false){
+                	if (canWalkHere(x - 1, y) == false){
+	                	return true;
+                	}
+                	else{
+                		x -- ;
+                	}
+                }
+	}
+	return false;
+	}
 
 	function neighbors2(x, y)
 	{
@@ -339,10 +389,10 @@ function findPath(world, pathStart, pathEnd)
 		S = y + 1,
 		E = x + 1,
 		W = x - 1,
-		myN = N > -1 && canWalkHere(N, x),
-		myS = S < worldHeight && canWalkHere(S, x),
-		myE = E < worldWidth && canWalkHere(y, E),
-		myW = W > -1 && canWalkHere(y, W),
+		myN = N > -1 && canWalkHere(x, N),
+		myS = S < worldHeight && canWalkHere(x, S),
+		myE = E < worldWidth && canWalkHere(E, y),
+		myW = W > -1 && canWalkHere(W, y),
 		result = [];
 		result.push({x:x, y:N, on:myN, z:consecutiveneighbors(x,N,"North")});
 		result.push({x:E, y:y, on:myE, z:consecutiveneighbors(E,y,"East")});
@@ -357,29 +407,108 @@ function findPath(world, pathStart, pathEnd)
 	function moveSafe(){
 	var ns = neighbors2(me.snakeHead.col, me.snakeHead.row);
 	if ((ns[0].on == false) && (ns[1].on == true && ns[3].on == true)) {
-		if (ns[3].z > ns[1].z) {
+		if (ns[3].z > ns[1].z && !(checkChute(ns[3].x,ns[3].y,"West"))) {
+			console.log(checkChute(ns[3].x,ns[3].y,"West"));
 			moveQueue.unshift(coorToDir(pathStart, [ns[3].x,ns[3].y]));
 		}
 		else {
+			console.log(checkChute(ns[1].x,ns[1].y,"East"));
 			moveQueue.unshift(coorToDir(pathStart, [ns[1].x,ns[1].y]));
 		}
 	}
 	else if ((ns[0].on == true && ns[2].on == true) && (ns[1].on == false && ns[3].on == false)) {
-		if (ns[2].z > ns[0].z) {
+		if (ns[2].z > ns[0].z && !(checkChute(ns[2].x,ns[2].y,"South"))) {
+			console.log(checkChute(ns[3].x,ns[3].y,"South"));
 			moveQueue.unshift(coorToDir(pathStart, [ns[2].x,ns[2].y]));
 		}
 		else {
+			console.log(checkChute(ns[0].x,ns[0].y,"North"));
 			moveQueue.unshift(coorToDir(pathStart, [ns[0].x,ns[0].y]));
 		}
 	}
 	else {
-		ns = neighbors(me.snakeHead.col, me.snakeHead.row);
-		moveQueue.unshift(coorToDir(pathStart, [ns[0].x,ns[0].y]));
+		ns = neighbors2(me.snakeHead.col, me.snakeHead.row);
+		console.log("else chute check");
+		if (ns[0].on && !(checkChute(ns[0].x,ns[0].y,"North"))){
+			console.log("North Safe");
+			moveQueue.unshift(coorToDir(pathStart, [ns[0].x,ns[0].y]));
+		}
+		else if (ns[1].on && !(checkChute(ns[1].x,ns[1].y,"East"))){
+			console.log("East Safe");
+			moveQueue.unshift(coorToDir(pathStart, [ns[1].x,ns[1].y]));
+		}
+		else if (ns[2].on && !(checkChute(ns[2].x,ns[2].y,"South"))){
+			console.log("South Safe");
+			moveQueue.unshift(coorToDir(pathStart, [ns[2].x,ns[2].y]));
+		}
+		else if (ns[3].on && !(checkChute(ns[3].x,ns[3].y,"West"))){
+			console.log("West Safe");
+			moveQueue.unshift(coorToDir(pathStart, [ns[3].x,ns[3].y]));
+		}
+		else{
+			ns = neighbors(me.snakeHead.col, me.snakeHead.row);
+			moveQueue.unshift(coorToDir(pathStart, [ns[0].x,ns[0].y]));
+		}
 	}
 	
 	console.log(pathStart, [ns[0].x,ns[0].y]);
 	
 	}
+	
+	/*function moveSafe(){
+		var ns = neighbors2(me.snakeHead.col, me.snakeHead.row);
+		if ((ns[0].on == false || ns[2].on == false) && (ns[1].on == true && ns[3].on == true)) {
+			if ((checkChute(ns[3].x, ns[3].y) == true && checkChute(ns[1].x, ns[1].y) == true) || (checkChute(ns[3].x, ns[3].y) == false && checkChute(ns[1].x, ns[1].y) == false)){
+				if (ns[3].cn > ns[1].cn) {
+					console.log(checkChute(ns[3].x,ns[3].y,"West"));
+					moveQueue.unshift(coorToDir(pathStart, [ns[3].x,ns[3].y]));
+				}
+				else {
+					console.log(checkChute(ns[1].x,ns[1].y,"East"));
+					moveQueue.unshift(coorToDir(pathStart, [ns[1].x,ns[1].y]));
+				}
+			}
+			else{
+				if (checkChute(ns[3].x, ns[3].y) == false){
+					console.log(checkChute(ns[3].x,ns[3].y,"West"));
+					moveQueue.unshift(coorToDir(pathStart, [ns[3].x,ns[3].y]));
+				}
+				else {
+					console.log(checkChute(ns[1].x,ns[1].y,"East"));
+					moveQueue.unshift(coorToDir(pathStart, [ns[1].x,ns[1].y]));
+				}
+			}
+		}
+		else if ((ns[0].on == true && ns[2].on == true) && (ns[1].on == false && ns[3].on == false)) {
+			if ((checkChute(ns[0].x, ns[0].y) == true && checkChute(ns[2].x, ns[2].y) == true) || (checkChute(ns[0].x, ns[0].y) == false && checkChute(ns[2].x, ns[2].y) == false)){
+				if (ns[2].cn > ns[0].cn) {
+					console.log(checkChute(ns[2].x,ns[2].y,"South"));
+					moveQueue.unshift(coorToDir(pathStart, [ns[2].x,ns[2].y]));
+				}
+				else {
+					console.log(checkChute(ns[0].x,ns[0].y,"North"));
+					moveQueue.unshift(coorToDir(pathStart, [ns[0].x,ns[0].y]));
+				}
+			}
+			else {
+				if (checkChute(ns[0].x, ns[0].y) == false){
+					console.log(false);
+					moveQueue.unshift(coorToDir(pathStart, [ns[0].x,ns[0].y]));
+				}
+				else {
+					console.log(true);
+					moveQueue.unshift(coorToDir(pathStart, [ns[2].x,ns[2].y]));
+				}
+			}
+		}
+		else {
+			ns = neighbors(me.snakeHead.col, me.snakeHead.row);
+			moveQueue.unshift(coorToDir(pathStart, [ns[0].x,ns[0].y]));
+		}
+		
+		console.log(pathStart, [ns[0].x,ns[0].y]);
+	
+	}*/
 	
 	function checkBody(x,y){
 		//console.log(me.snakeBody);
@@ -398,7 +527,7 @@ function findPath(world, pathStart, pathEnd)
 	{
 		//console.log(me.snakeHead);
 		return ((world[x] != null) &&
-			(world[x][y] <= maxWalkableTileNum));
+			(world[y][x] <= maxWalkableTileNum));
 	};
 	
 	// Node function, returns a new object with Node properties
